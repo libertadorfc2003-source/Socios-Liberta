@@ -751,6 +751,26 @@
                 pdfFileName: `Debito_Automatico_LFC_${document.getElementById('apellido')?.value || 'SOCIO'}_${document.getElementById('nombre')?.value || 'NUEVO'}.pdf`
             };
 
+            if (selectedPayMethod === 'debito') {
+                try {
+                    const pdfResp = await fetch('./Autorizacion_de_debito_en_cuenta_Interfast.pdf');
+                    if (pdfResp.ok) {
+                        const blob = await pdfResp.blob();
+                        const reader = new FileReader();
+                        const base64Promise = new Promise((resolve) => {
+                            reader.onloadend = () => {
+                                const base64data = reader.result.split(',')[1];
+                                resolve(base64data);
+                            };
+                            reader.readAsDataURL(blob);
+                        });
+                        payload.pdfBase64 = await base64Promise;
+                    }
+                } catch (e) {
+                    console.error('Error adjuntando PDF base64:', e);
+                }
+            }
+
             try {
                 await fetch(GAS_URL, {
                     method: 'POST',
