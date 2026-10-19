@@ -722,6 +722,46 @@
         }
 
         async function submitForm() {
+            const checkReg = document.getElementById('checkReglamento');
+            const checkTerm = document.getElementById('checkTerminos');
+
+            if ((checkReg && !checkReg.checked) || (checkTerm && !checkTerm.checked)) {
+                alert('Por favor, aceptá el Reglamento Interno y los Términos y Condiciones para finalizar.');
+                return;
+            }
+
+            const btnSubmit = document.querySelector('button[onclick="submitForm()"]');
+            if (btnSubmit) {
+                btnSubmit.disabled = true;
+                btnSubmit.innerText = 'ENVIANDO ADHESIÓN...';
+            }
+
+            const payload = {
+                nombre: document.getElementById('nombre')?.value || '',
+                apellido: document.getElementById('apellido')?.value || '',
+                dni: document.getElementById('dni')?.value || '',
+                categoria: document.getElementById('categoriaSocio')?.value || 'SOCIO HINCHA GRANADERO',
+                email: document.getElementById('email')?.value || '',
+                domicilio: document.getElementById('domicilio')?.value || '',
+                pago: selectedPayMethod === 'debito' ? 'DEBITO' : 'TRANSFERENCIA / EFECTIVO',
+                bancoNombre: document.getElementById('bancoNombre')?.value || '',
+                bancoCbu: document.getElementById('bancoCbu')?.value || '',
+                bancoTitular: document.getElementById('bancoTitular')?.value || '',
+                bancoTitularDni: document.getElementById('bancoTitularDni')?.value || '',
+                pdfFileName: `Debito_Automatico_LFC_${document.getElementById('apellido')?.value || 'SOCIO'}_${document.getElementById('nombre')?.value || 'NUEVO'}.pdf`
+            };
+
+            try {
+                await fetch(GAS_URL, {
+                    method: 'POST',
+                    mode: 'no-cors',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+            } catch (err) {
+                console.error('Error enviando adhesión al backend:', err);
+            }
+
             const originalCard = document.querySelector('.md\\:col-span-5 > div');
             const modalContainer = document.getElementById('modalCarnetContainer');
             const modal = document.getElementById('successModal');
@@ -732,6 +772,11 @@
 
             if (modal) {
                 modal.classList.remove('hidden');
+            }
+
+            if (btnSubmit) {
+                btnSubmit.disabled = false;
+                btnSubmit.innerText = 'ENVIAR ADHESIÓN Y GENERAR CARNET';
             }
         }
 
