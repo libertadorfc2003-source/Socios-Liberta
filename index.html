@@ -368,7 +368,7 @@
                             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                 <div>
                                     <label class="block text-xs font-bold uppercase text-gray-300 mb-1">Nombre del Titular de Cuenta *</label>
-                                    <input type="text" id="bancoTitular" placeholder="Mismo que el socio" class="input-custom" oninput="cleanError(this); this.value=this.value.replace(/[^a-zA-ZáéíóúÁÉÍÓÚñÑ\s]/g,'')">
+                                    <input type="text" id="bancoTitular" placeholder="Nombre y Apellido del Titular" class="input-custom" oninput="cleanError(this); this.value=this.value.replace(/[^a-zA-ZáéíóúÁÉÍÓÚñÑ\s]/g,'')">
                                 </div>
                                 <div>
                                     <label class="block text-xs font-bold uppercase text-gray-300 mb-1">DNI del Titular (Sólo números) *</label>
@@ -545,15 +545,15 @@
                 const reader = new FileReader();
                 reader.onload = function(e) {
                     userPhotoBase64 = e.target.result;
-                    const imgEl = document.querySelector('#carnetPhoto img');
-                    const placeholderEl = document.querySelector('#carnetPhoto div');
-                    if (imgEl) {
-                        imgEl.src = userPhotoBase64;
-                        imgEl.classList.remove('hidden');
-                    }
-                    if (placeholderEl) {
-                        placeholderEl.classList.add('hidden');
-                    }
+                    const imgEls = document.querySelectorAll('#carnetPhoto');
+                    const placeholderEls = document.querySelectorAll('#carnetPhotoText');
+                    imgEls.forEach(img => {
+                        img.src = userPhotoBase64;
+                        img.classList.remove('hidden');
+                    });
+                    placeholderEls.forEach(ph => {
+                        ph.classList.add('hidden');
+                    });
                 };
                 reader.readAsDataURL(file);
             }
