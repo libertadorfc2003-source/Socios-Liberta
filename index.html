@@ -12,6 +12,8 @@
 
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- PDF-Lib for dynamic PDF form filling -->
+    <script src="https://cdn.jsdelivr.net/npm/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
     <script>
         tailwind.config = {
             theme: {
@@ -521,7 +523,7 @@
                             <button type="button" class="w-1/3 p-3.5 rounded-xl border border-gray-600 text-xs font-bold uppercase hover:bg-gray-800 transition cursor-pointer" onclick="goToStep(2)">
                                  Volver
                             </button>
-                            <button type="button" class="w-2/3 btn-green cursor-pointer" onclick="submitForm()">
+                            <button type="button" id="btnSubmitForm" class="w-2/3 btn-green cursor-pointer" onclick="submitForm()">
                                 ENVIAR ADHESIÓN Y GENERAR CARNET
                             </button>
                         </div>
@@ -846,7 +848,15 @@
             if (añoEl) añoEl.innerText = 'AÑO Y MES DE INGRESO: ' + anio + ' / ' + mes;
         }
 
+        let isSubmitting = false;
+        let isFormSubmitted = false;
+
         async function submitForm() {
+            if (isSubmitting || isFormSubmitted) {
+                console.warn('La adhesión ya fue enviada o está en proceso.');
+                return;
+            }
+
             const checkReg = document.getElementById('checkReglamento');
             const checkTerm = document.getElementById('checkTerminos');
 
@@ -855,18 +865,31 @@
                 return;
             }
 
-            const btnSubmit = document.querySelector('button[onclick="submitForm()"]');
+            const dniVal = document.getElementById('dni')?.value?.trim();
+            const emailVal = document.getElementById('email')?.value?.trim()?.toLowerCase();
+
+            // Verificación para evitar duplicados locales
+            if (dniVal && localStorage.getItem('submitted_dni_' + dniVal)) {
+                alert('El DNI ' + dniVal + ' ya registra un alta enviada previamente. Mostramos tu Carnet Digital Oficial.');
+                showSuccessModal();
+                return;
+            }
+
+            isSubmitting = true;
+
+            const btnSubmit = document.getElementById('btnSubmitForm') || document.querySelector('button[onclick="submitForm()"]');
             if (btnSubmit) {
                 btnSubmit.disabled = true;
-                btnSubmit.innerText = 'ENVIANDO ADHESIÓN...';
+                btnSubmit.classList.add('opacity-50', 'pointer-events-none', 'cursor-not-allowed');
+                btnSubmit.innerText = 'PROCESANDO ADHESIÓN...';
             }
 
             const payload = {
                 nombre: document.getElementById('nombre')?.value || '',
                 apellido: document.getElementById('apellido')?.value || '',
-                dni: document.getElementById('dni')?.value || '',
+                dni: dniVal || '',
                 categoria: document.getElementById('categoriaSocio')?.value || 'SOCIO HINCHA GRANADERO',
-                email: document.getElementById('email')?.value || '',
+                email: emailVal || '',
                 domicilio: document.getElementById('domicilio')?.value || '',
                 pago: selectedPayMethod === 'debito' ? 'DEBITO' : 'TRANSFERENCIA / EFECTIVO',
                 bancoNombre: document.getElementById('bancoNombre')?.value || '',
@@ -880,19 +903,91 @@
                 try {
                     const pdfResp = await fetch('./Autorizacion_de_debito_en_cuenta_Interfast.pdf');
                     if (pdfResp.ok) {
-                        const blob = await pdfResp.blob();
-                        const reader = new FileReader();
-                        const base64Promise = new Promise((resolve) => {
-                            reader.onloadend = () => {
-                                const base64data = reader.result.split(',')[1];
-                                resolve(base64data);
-                            };
-                            reader.readAsDataURL(blob);
-                        });
-                        payload.pdfBase64 = await base64Promise;
+                        const existingPdfBytes = await pdfResp.arrayBuffer();
+                        if (window.PDFLib) {
+                            const { PDFDocument, rgb, StandardFonts } = window.PDFLib;
+                            const pdfDoc = await PDFDocument.load(existingPdfBytes);
+                            const font = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
+                            const pages = pdfDoc.getPages();
+                            
+                            const page1 = pages[0];
+                            const page2 = pages[1] || page1;
+
+                            const nom = (document.getElementById('nombre')?.value || '').toUpperCase();
+                            const ape = (document.getElementById('apellido')?.value || '').toUpperCase();
+                            const dni = (document.getElementById('dni')?.value || '').toUpperCase();
+                            const dom = (document.getElementById('domicilio')?.value || '').toUpperCase();
+                            
+                            const tit = (document.getElementById('bancoTitular')?.value || (nom + ' ' + ape)).toUpperCase();
+                            const titDni = (document.getElementById('bancoTitularDni')?.value || dni).toUpperCase();
+                            const banco = (document.getElementById('bancoNombre')?.value || '').toUpperCase();
+                            const cbu = (document.getElementById('bancoCbu')?.value || '').trim();
+
+                            const black = rgb(0.05, 0.05, 0.05);
+
+                            // ---- PAGINA 1: DATOS DEL TITULAR ----
+                            // Nombre
+                            page1.drawText(nom, { x: 75, y: 618, size: 10, font, color: black });
+                            // Apellido
+                            page1.drawText(ape, { x: 310, y: 618, size: 10, font, color: black });
+                            // DNI
+                            page1.drawText(dni, { x: 75, y: 568, size: 10, font, color: black });
+                            // Domicilio
+                            page1.drawText(dom, { x: 75, y: 518, size: 10, font, color: black });
+
+                            // ---- PAGINA 2: CUENTAS BANCARIAS ----
+                            if (pages.length > 1) {
+                                // Entidad Bancaria
+                                page2.drawText(banco, { x: 75, y: 715, size: 10, font, color: black });
+                                
+                                // CBU 22 Dígitos en casilleros individuales
+                                if (cbu.length === 22) {
+                                    const startX = 78;
+                                    const stepX = 20.15;
+                                    const cbuY = 652;
+                                    for (let i = 0; i < 22; i++) {
+                                        const digit = cbu[i];
+                                        page2.drawText(digit, { x: startX + (i * stepX), y: cbuY, size: 11, font, color: black });
+                                    }
+                                } else {
+                                    page2.drawText(cbu, { x: 78, y: 652, size: 10, font, color: black });
+                                }
+
+                                // Aclaración / Nombre Titular
+                                page2.drawText(tit, { x: 310, y: 380, size: 10, font, color: black });
+                                // DNI Titular
+                                page2.drawText(titDni, { x: 75, y: 330, size: 10, font, color: black });
+                                // Lugar y Fecha
+                                const hoy = new Date();
+                                const fechaStr = 'BUENOS AIRES, ' + String(hoy.getDate()).padStart(2, '0') + '/' + String(hoy.getMonth() + 1).padStart(2, '0') + '/' + hoy.getFullYear();
+                                page2.drawText(fechaStr, { x: 310, y: 330, size: 9, font, color: black });
+                            }
+
+                            const modifiedPdfBytes = await pdfDoc.save();
+                            
+                            // Convertir uint8array a base64
+                            let binary = '';
+                            const bytes = new Uint8Array(modifiedPdfBytes);
+                            const len = bytes.byteLength;
+                            for (let i = 0; i < len; i++) {
+                                binary += String.fromCharCode(bytes[i]);
+                            }
+                            payload.pdfBase64 = btoa(binary);
+                        } else {
+                            // Fallback si no cargó la librería
+                            const blob = await pdfResp.blob();
+                            const reader = new FileReader();
+                            const base64Promise = new Promise((resolve) => {
+                                reader.onloadend = () => {
+                                    resolve(reader.result.split(',')[1]);
+                                };
+                                reader.readAsDataURL(blob);
+                            });
+                            payload.pdfBase64 = await base64Promise;
+                        }
                     }
                 } catch (e) {
-                    console.error('Error adjuntando PDF base64:', e);
+                    console.error('Error generando PDF de débito dinámico:', e);
                 }
             }
 
@@ -907,6 +1002,24 @@
                 console.error('Error enviando adhesión al backend:', err);
             }
 
+            isFormSubmitted = true;
+            isSubmitting = false;
+
+            if (dniVal) {
+                localStorage.setItem('submitted_dni_' + dniVal, '1');
+            }
+
+            showSuccessModal();
+
+            if (btnSubmit) {
+                btnSubmit.disabled = true;
+                btnSubmit.classList.remove('opacity-50', 'pointer-events-none');
+                btnSubmit.classList.add('opacity-70', 'cursor-not-allowed', 'bg-emerald-800');
+                btnSubmit.innerText = 'ADHESIÓN ENVIADA Y REGISTRADA ✓';
+            }
+        }
+
+        function showSuccessModal() {
             const originalCard = document.querySelector('.md\\:col-span-5 > div');
             const modalContainer = document.getElementById('modalCarnetContainer');
             const modal = document.getElementById('successModal');
@@ -917,11 +1030,6 @@
 
             if (modal) {
                 modal.classList.remove('hidden');
-            }
-
-            if (btnSubmit) {
-                btnSubmit.disabled = false;
-                btnSubmit.innerText = 'ENVIAR ADHESIÓN Y GENERAR CARNET';
             }
         }
 
