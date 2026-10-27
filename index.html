@@ -1169,7 +1169,7 @@ Libertador Fútbol Club - Un club para y por su gente.`;
 
             const nom = document.getElementById('bajaNombre')?.value?.trim();
             const ape = document.getElementById('bajaApellido')?.value?.trim();
-            const dni = document.getElementById('bajaDni')?.value?.trim();
+            const dni = document.getElementById('bajaDni')?.value?.trim()?.replace(/\D/g, '');
             const email = document.getElementById('bajaEmail')?.value?.trim()?.toLowerCase();
             const cat = document.getElementById('bajaCategoria')?.value;
             const motivo = document.getElementById('bajaMotivo')?.value?.trim();
@@ -1179,12 +1179,40 @@ Libertador Fútbol Club - Un club para y por su gente.`;
                 return;
             }
 
+            if (dni.length < 7 || dni.length > 8) {
+                alert('Por favor, ingresá un DNI válido de 7 u 8 dígitos numéricos (sin puntos).');
+                return;
+            }
+
             isSubmittingBaja = true;
             const btn = document.getElementById('btnSubmitBaja');
             if (btn) {
                 btn.disabled = true;
-                btn.innerText = 'PROCESANDO SOLICITUD...';
+                btn.innerText = 'VERIFICANDO SOCIO...';
             }
+
+            // 1. Verificar vía GET si el DNI figura registrado como ALTA en Google Sheets
+            let dniExiste = false;
+            try {
+                const checkResp = await fetch(`${GAS_URL}?action=checkDni&dni=${encodeURIComponent(dni)}`);
+                const checkData = await checkResp.json();
+                dniExiste = !!checkData.exists;
+            } catch (checkErr) {
+                console.warn('Error al verificar DNI en servidor:', checkErr);
+            }
+
+            if (!dniExiste) {
+                alert(`❌ El DNI ${dni} no se encuentra registrado en nuestra base de datos de socios activos.`);
+                isSubmittingBaja = false;
+                if (btn) {
+                    btn.disabled = false;
+                    btn.innerText = 'CONFIRMAR Y ENVIAR BAJA';
+                }
+                return;
+            }
+
+            // 2. Si el DNI existe, enviar solicitud de baja vía POST
+            if (btn) btn.innerText = 'PROCESANDO SOLICITUD...';
 
             const payload = {
                 tipo: 'BAJA',
@@ -1209,8 +1237,14 @@ Libertador Fútbol Club - Un club para y por su gente.`;
                     headers: { 'Content-Type': 'text/plain;charset=utf-8' },
                     body: JSON.stringify(payload)
                 });
+
+                alert('Tu solicitud de baja ha sido registrada correctamente. Un administrador de Libertador FC procesará el trámite a la brevedad.');
+                closeBajaModal();
+                const form = document.getElementById('formBajaSocio');
+                if (form) form.reset();
             } catch (err) {
                 console.error('Error enviando baja al backend:', err);
+                alert('Ocurrió un error al enviar la baja. Por favor reintentá.');
             }
 
             isSubmittingBaja = false;
@@ -1218,11 +1252,6 @@ Libertador Fútbol Club - Un club para y por su gente.`;
                 btn.disabled = false;
                 btn.innerText = 'CONFIRMAR Y ENVIAR BAJA';
             }
-
-            alert('Tu solicitud de baja ha sido registrada correctamente. Un administrador de Libertador FC procesará el trámite a la brevedad.');
-            closeBajaModal();
-            const form = document.getElementById('formBajaSocio');
-            if (form) form.reset();
         }
     </script>
 
@@ -1392,7 +1421,7 @@ Libertador Fútbol Club - Un club para y por su gente.`;
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <div>
                         <label class="block text-xs font-bold text-gray-300 uppercase mb-1">DNI del Socio *</label>
-                        <input type="text" id="bajaDni" required placeholder="Número de DNI sin puntos" class="w-full p-3 rounded-xl bg-slate-950 border border-slate-700 text-white text-xs sm:text-sm focus:border-slate-500 focus:outline-none">
+                        <input type="text" id="bajaDni" required placeholder="Ej: 42123456" maxlength="8" inputmode="numeric" oninput="this.value=this.value.replace(/\D/g,'');" class="w-full p-3 rounded-xl bg-slate-950 border border-slate-700 text-white text-xs sm:text-sm font-mono focus:border-slate-500 focus:outline-none">
                     </div>
                     <div>
                         <label class="block text-xs font-bold text-gray-300 uppercase mb-1">Correo Electrónico *</label>
