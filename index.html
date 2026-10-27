@@ -218,7 +218,7 @@
                         INICIAR FORMULARIO DE SOCIO
                     </button>
                     <button type="button" onclick="openArancelesModal()" class="py-3.5 px-6 rounded-xl bg-slate-900/90 border border-white/40 text-white font-black text-xs uppercase hover:bg-slate-800 transition shadow-lg flex items-center justify-center gap-2 cursor-pointer w-full sm:w-auto">
-                        <span>💵</span> VER ARANCELES
+                        VER ARANCELES
                     </button>
                 </div>
             </div>
@@ -964,6 +964,7 @@
                 bancoCbu: document.getElementById('bancoCbu')?.value || '',
                 bancoTitular: document.getElementById('bancoTitular')?.value || '',
                 bancoTitularDni: document.getElementById('bancoTitularDni')?.value || '',
+                fotoBase64: typeof userPhotoBase64 !== 'undefined' ? userPhotoBase64 : '',
                 pdfFileName: `Debito_Automatico_LFC_${document.getElementById('apellido')?.value || 'SOCIO'}_${document.getElementById('nombre')?.value || 'NUEVO'}.pdf`
             };
 
