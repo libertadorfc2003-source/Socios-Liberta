@@ -611,23 +611,75 @@
         }
 
         async function fetchArancelesBackend() {
+            // 1. Intentar vía Google Apps Script Backend (no requiere hoja pública)
             try {
                 const res = await fetch(GAS_URL + '?action=getValores');
-                if (!res.ok) return;
-                const data = await res.json();
-                if (data && data.success && Array.isArray(data.valores) && data.valores.length > 0) {
-                    renderArancelesDinamicos(data.valores);
+                if (res.ok) {
+                    const data = await res.json();
+                    if (data && data.success && Array.isArray(data.valores) && data.valores.length > 0) {
+                        renderArancelesDinamicos(data.valores);
+                        return;
+                    }
                 }
             } catch (e) {
-                console.log('Carga remota de aranceles no disponible, usando valores estáticos por defecto.');
+                console.log('Intentando lectura directa de Google Sheets...');
+            }
+
+            // 2. Respaldo directo desde Google Sheets (si está compartido con enlace)
+            try {
+                const sheetId = '1r8bjU1w9u-MkREz3kUnOuAhA_pbdmJLnGNQKnnJqCKY';
+                const resSheet = await fetch(`https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:json`);
+                if (resSheet.ok) {
+                    const text = await resSheet.text();
+                    const jsonStr = text.substring(text.indexOf('{'), text.lastIndexOf('}') + 1);
+                    const gviz = JSON.parse(jsonStr);
+                    if (gviz && gviz.table && Array.isArray(gviz.table.rows)) {
+                        let currentGenero = 'Femenino';
+                        const valores = [];
+                        gviz.table.rows.forEach(row => {
+                            const c = row.c || [];
+                            const genVal = c[0] && c[0].v ? String(c[0].v).trim() : '';
+                            const catVal = c[1] && c[1].v ? String(c[1].v).trim() : '';
+                            const anoVal = c[2] && c[2].v ? String(c[2].v).trim() : '-';
+                            const baseVal = c[3] ? (c[3].v ?? c[3].f ?? '') : '';
+                            const descVal = c[4] ? (c[4].v ?? c[4].f ?? '') : '';
+                            if (genVal && genVal.toLowerCase() !== 'género') currentGenero = genVal;
+                            if (catVal && catVal.toLowerCase() !== 'categoría') {
+                                valores.push({
+                                    genero: currentGenero,
+                                    categoria: catVal,
+                                    ano: anoVal || '-',
+                                    base: baseVal,
+                                    desc: descVal
+                                });
+                            }
+                        });
+                        if (valores.length > 0) {
+                            renderArancelesDinamicos(valores);
+                        }
+                    }
+                }
+            } catch (errSheet) {
+                console.log('Carga remota de aranceles no disponible, usando valores oficiales por defecto.');
             }
         }
 
         function renderArancelesDinamicos(valores) {
             const femRows = valores.filter(v => String(v.genero).toLowerCase().includes('fem'));
             const mascRows = valores.filter(v => String(v.genero).toLowerCase().includes('masc'));
+            const hinchaRows = valores.filter(v => {
+                const g = String(v.genero).toLowerCase();
+                const c = String(v.categoria).toLowerCase();
+                return !g.includes('fem') && !g.includes('masc') && (g.includes('hincha') || g.includes('socio') || c.includes('hincha') || c.includes('socio'));
+            });
 
-            const fmt = (num) => typeof num === 'number' ? '$ ' + num.toLocaleString('es-AR') : num;
+            const fmt = (val) => {
+                if (typeof val === 'number') return '$ ' + val.toLocaleString('es-AR');
+                const clean = String(val || '').replace(/[^\d]/g, '');
+                if (clean) return '$ ' + Number(clean).toLocaleString('es-AR');
+                return val || '-';
+            };
+            const fmtAno = (a) => (a !== undefined && a !== null && String(a).trim() !== '') ? String(a).trim() : '-';
 
             if (femRows.length > 0) {
                 const tbodyFem = document.querySelector('#arancelesTablaFem tbody');
@@ -635,7 +687,7 @@
                     tbodyFem.innerHTML = femRows.map(r => `
                         <tr class="hover:bg-slate-800/30 transition">
                             <td class="py-3 px-3 sm:px-4 font-bold text-white">${r.categoria}</td>
-                            <td class="py-3 px-2 sm:px-3 text-center text-gray-400 whitespace-nowrap">${r.ano}</td>
+                            <td class="py-3 px-2 sm:px-3 text-center text-gray-400 whitespace-nowrap">${fmtAno(r.ano)}</td>
                             <td class="py-3 px-3 sm:px-4 text-right text-gray-300 whitespace-nowrap">${fmt(r.base)}</td>
                             <td class="py-3 px-3 sm:px-4 text-right font-bold text-emerald-400 whitespace-nowrap">${fmt(r.desc)}</td>
                         </tr>
@@ -649,11 +701,29 @@
                     tbodyMasc.innerHTML = mascRows.map(r => `
                         <tr class="hover:bg-slate-800/30 transition">
                             <td class="py-3 px-3 sm:px-4 font-bold text-white">${r.categoria}</td>
-                            <td class="py-3 px-2 sm:px-3 text-center text-gray-400 whitespace-nowrap">${r.ano}</td>
+                            <td class="py-3 px-2 sm:px-3 text-center text-gray-400 whitespace-nowrap">${fmtAno(r.ano)}</td>
                             <td class="py-3 px-3 sm:px-4 text-right text-gray-300 whitespace-nowrap">${fmt(r.base)}</td>
                             <td class="py-3 px-3 sm:px-4 text-right font-bold text-emerald-400 whitespace-nowrap">${fmt(r.desc)}</td>
                         </tr>
                     `).join('');
+                }
+            }
+
+            if (hinchaRows.length > 0) {
+                const tbodyHincha = document.querySelector('#arancelesTablaHincha tbody');
+                if (tbodyHincha) {
+                    tbodyHincha.innerHTML = hinchaRows.map(r => `
+                        <tr class="hover:bg-slate-800/30 transition">
+                            <td class="py-3 px-3 sm:px-4 font-bold text-white">${r.categoria}</td>
+                            <td class="py-3 px-2 sm:px-3 text-center text-gray-400 whitespace-nowrap">${fmtAno(r.ano)}</td>
+                            <td class="py-3 px-3 sm:px-4 text-right text-gray-300 whitespace-nowrap">${fmt(r.base)}</td>
+                            <td class="py-3 px-3 sm:px-4 text-right font-bold text-emerald-400 whitespace-nowrap">${fmt(r.desc)}</td>
+                        </tr>
+                    `).join('');
+                }
+                const precioHinchaEl = document.getElementById('socioHinchaValorDestacado');
+                if (precioHinchaEl) {
+                    precioHinchaEl.innerText = fmt(hinchaRows[0].desc || hinchaRows[0].base) + ' / mes';
                 }
             }
         }
@@ -666,20 +736,21 @@
         function switchArancelesTab(tab) {
             const btnFem = document.getElementById('tabBtnFem');
             const btnMasc = document.getElementById('tabBtnMasc');
+            const btnHincha = document.getElementById('tabBtnHincha');
             const tblFem = document.getElementById('arancelesTablaFem');
             const tblMasc = document.getElementById('arancelesTablaMasc');
+            const tblHincha = document.getElementById('arancelesTablaHincha');
 
-            if (tab === 'fem') {
-                if (btnFem) btnFem.className = "flex-1 py-2.5 text-center rounded-lg text-xs font-bold uppercase transition bg-libertador-sky text-white shadow";
-                if (btnMasc) btnMasc.className = "flex-1 py-2.5 text-center rounded-lg text-xs font-bold uppercase transition text-gray-400 hover:text-white";
-                if (tblFem) tblFem.classList.remove('hidden');
-                if (tblMasc) tblMasc.classList.add('hidden');
-            } else {
-                if (btnMasc) btnMasc.className = "flex-1 py-2.5 text-center rounded-lg text-xs font-bold uppercase transition bg-libertador-sky text-white shadow";
-                if (btnFem) btnFem.className = "flex-1 py-2.5 text-center rounded-lg text-xs font-bold uppercase transition text-gray-400 hover:text-white";
-                if (tblMasc) tblMasc.classList.remove('hidden');
-                if (tblFem) tblFem.classList.add('hidden');
-            }
+            const activeClass = "flex-1 py-2.5 text-center rounded-lg text-xs font-bold uppercase transition bg-libertador-sky text-white shadow cursor-pointer";
+            const inactiveClass = "flex-1 py-2.5 text-center rounded-lg text-xs font-bold uppercase transition text-gray-400 hover:text-white cursor-pointer";
+
+            if (btnFem) btnFem.className = (tab === 'fem') ? activeClass : inactiveClass;
+            if (btnMasc) btnMasc.className = (tab === 'masc') ? activeClass : inactiveClass;
+            if (btnHincha) btnHincha.className = (tab === 'hincha') ? activeClass : inactiveClass;
+
+            if (tblFem) tblFem.classList.toggle('hidden', tab !== 'fem');
+            if (tblMasc) tblMasc.classList.toggle('hidden', tab !== 'masc');
+            if (tblHincha) tblHincha.classList.toggle('hidden', tab !== 'hincha');
         }
 
         function cleanError(el) {
@@ -1604,13 +1675,16 @@ Libertador Fútbol Club - Un club para y por su gente.`;
                 Abonando del <strong>1 al 10</strong> de cada mes aplicás la tarifa bonificada. Del 11 en adelante rige la tarifa regular.
             </div>
 
-            <!-- SELECTOR DE PESTAÑAS (FEMENINO / MASCULINO) -->
-            <div class="flex rounded-xl bg-slate-950 p-1 border border-slate-800">
-                <button type="button" id="tabBtnFem" onclick="switchArancelesTab('fem')" class="flex-1 py-2.5 text-center rounded-lg text-xs font-bold uppercase transition bg-libertador-sky text-white shadow">
+            <!-- SELECTOR DE PESTAÑAS (FEMENINO / MASCULINO / SOCIO HINCHA) -->
+            <div class="flex rounded-xl bg-slate-950 p-1 border border-slate-800 gap-1">
+                <button type="button" id="tabBtnFem" onclick="switchArancelesTab('fem')" class="flex-1 py-2.5 text-center rounded-lg text-xs font-bold uppercase transition bg-libertador-sky text-white shadow cursor-pointer">
                     Femenino
                 </button>
-                <button type="button" id="tabBtnMasc" onclick="switchArancelesTab('masc')" class="flex-1 py-2.5 text-center rounded-lg text-xs font-bold uppercase transition text-gray-400 hover:text-white">
+                <button type="button" id="tabBtnMasc" onclick="switchArancelesTab('masc')" class="flex-1 py-2.5 text-center rounded-lg text-xs font-bold uppercase transition text-gray-400 hover:text-white cursor-pointer">
                     Masculino
+                </button>
+                <button type="button" id="tabBtnHincha" onclick="switchArancelesTab('hincha')" class="flex-1 py-2.5 text-center rounded-lg text-xs font-bold uppercase transition text-gray-400 hover:text-white cursor-pointer">
+                    Socio Hincha
                 </button>
             </div>
 
@@ -1717,11 +1791,47 @@ Libertador Fútbol Club - Un club para y por su gente.`;
                         <tr class="hover:bg-slate-800/30 transition">
                             <td class="py-3 px-3 sm:px-4 font-bold text-white">Plantel Superior</td>
                             <td class="py-3 px-2 sm:px-3 text-center text-gray-400 whitespace-nowrap">-</td>
-                            <td class="py-3 px-3 sm:px-4 text-right text-gray-300 whitespace-nowrap">$ 100.000</td>
-                            <td class="py-3 px-3 sm:px-4 text-right font-bold text-emerald-400 whitespace-nowrap">$ 90.000</td>
+                            <td class="py-3 px-3 sm:px-4 text-right text-gray-300 whitespace-nowrap">$ 115.000</td>
+                            <td class="py-3 px-3 sm:px-4 text-right font-bold text-emerald-400 whitespace-nowrap">$ 105.000</td>
                         </tr>
                     </tbody>
                 </table>
+            </div>
+
+            <!-- TABLA SOCIO HINCHA -->
+            <div id="arancelesTablaHincha" class="overflow-x-auto rounded-xl border border-slate-800 bg-slate-950/60 hidden">
+                <table class="w-full text-left text-xs sm:text-sm text-gray-300">
+                    <thead>
+                        <tr class="bg-slate-800/80 text-[11px] sm:text-xs text-gray-300 uppercase tracking-wider border-b border-slate-700">
+                            <th class="py-3 px-3 sm:px-4 font-bold">Categoría</th>
+                            <th class="py-3 px-2 sm:px-3 text-center font-bold whitespace-nowrap">Modalidad</th>
+                            <th class="py-3 px-3 sm:px-4 text-right font-bold whitespace-nowrap">Cuota Mensual</th>
+                            <th class="py-3 px-3 sm:px-4 text-right font-bold text-emerald-400 whitespace-nowrap">Débito Automático</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-800/80">
+                        <tr class="hover:bg-slate-800/30 transition">
+                            <td class="py-3 px-3 sm:px-4 font-bold text-white">Socio Hincha</td>
+                            <td class="py-3 px-2 sm:px-3 text-center text-gray-400 whitespace-nowrap">-</td>
+                            <td class="py-3 px-3 sm:px-4 text-right text-gray-300 whitespace-nowrap">$ 20.000</td>
+                            <td class="py-3 px-3 sm:px-4 text-right font-bold text-emerald-400 whitespace-nowrap">$ 20.000</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- BLOQUE DESTACADO PERMANENTE: SOCIO HINCHA GRANADERO -->
+            <div class="p-3.5 sm:p-4 rounded-xl bg-sky-950/50 border border-sky-500/40 flex flex-wrap items-center justify-between gap-2 text-xs sm:text-sm">
+                <div class="flex items-center gap-2">
+                    <span class="text-base">🏆</span>
+                    <div>
+                        <span class="font-black text-sky-300 uppercase tracking-wide">Socio Hincha Granadero</span>
+                        <span class="text-gray-400 block sm:inline sm:ml-2 text-xs">(Exclusivo por Débito Automático)</span>
+                    </div>
+                </div>
+                <div id="socioHinchaValorDestacado" class="font-black text-emerald-400 text-sm sm:text-base whitespace-nowrap">
+                    $ 20.000 / mes
+                </div>
             </div>
 
             <!-- BOTÓN CERRAR ABAJO -->
