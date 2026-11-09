@@ -266,6 +266,9 @@
                             <div id="carnetNum" class="text-[11px] font-semibold text-slate-200 uppercase tracking-wide">
                                 SOCIO N°: LFC-001
                             </div>
+                            <div id="carnetCat" class="text-[11px] font-semibold text-sky-300 uppercase tracking-wide leading-tight">
+                                CATEGORÍA: SIN SELECCIONAR
+                            </div>
                             <div id="carnetAño" class="text-[11px] font-semibold text-slate-200 uppercase tracking-wide">
                                 AÑO Y MES DE INGRESO: XXXX
                             </div>
@@ -330,7 +333,7 @@
                             </div>
                             <div>
                                 <label class="block text-xs font-bold uppercase text-gray-300 mb-1">Categoría de Socio *</label>
-                                <select id="categoria" required class="input-custom" onchange="updateCarnetLive()">
+                                <select id="categoria" required class="input-custom" onchange="cleanError(this); updateCarnetLive(); checkCategoryPaymentRestrictions();">
                                     <option value="">-- Seleccionar Categoría --</option>
                                     <optgroup label="⚽ FEMENINO">
                                         <option value="FEMENINO - Promocionales (2018-2021)">FEMENINO - Promocionales (2018 - 2021)</option>
@@ -406,14 +409,23 @@
                         <!-- TARJETAS DE SELECCIÓN -->
                         <div class="grid grid-cols-2 gap-4 mb-4">
                             <div id="pay-card-debito" class="pay-card selected" onclick="setPayMethod('debito')">
-                                <span class="block text-2xl mb-1"></span>
+                                <span class="block text-2xl mb-1">💳</span>
                                 <span class="block text-xs font-black uppercase">Débito Automático</span>
                                 <span class="block text-[10px] text-libertador-sky mt-1">(Descuento Especial)</span>
                             </div>
                             <div id="pay-card-transf" class="pay-card" onclick="setPayMethod('transferencia')">
-                                <span class="block text-2xl mb-1"></span>
+                                <span class="block text-2xl mb-1">💵</span>
                                 <span class="block text-xs font-black uppercase">Transferencia / Efectivo</span>
                                 <span class="block text-[10px] text-gray-400 mt-1">Pago mensual manual</span>
+                            </div>
+                        </div>
+
+                        <!-- AVISO RESTRICCIÓN SOCIO HINCHA GRANADERO -->
+                        <div id="granaderoPayNotice" class="hidden p-4.5 rounded-2xl bg-amber-950/70 border-2 border-amber-500/80 text-amber-200 text-xs font-semibold mb-4 shadow-xl flex items-center gap-3">
+                            <span class="text-xl">🔒</span>
+                            <div>
+                                <strong class="text-amber-300 font-bold block text-sm">Categoría SOCIO HINCHA GRANADERO:</strong>
+                                La modalidad de pago exclusiva para esta categoría es <strong>Débito Automático</strong>. La opción de Transferencia/Efectivo se encuentra bloqueada.
                             </div>
                         </div>
 
@@ -595,6 +607,55 @@
         function openArancelesModal() {
             const modal = document.getElementById('arancelesModal');
             if (modal) modal.classList.remove('hidden');
+            fetchArancelesBackend();
+        }
+
+        async function fetchArancelesBackend() {
+            try {
+                const res = await fetch(GAS_URL + '?action=getValores');
+                if (!res.ok) return;
+                const data = await res.json();
+                if (data && data.success && Array.isArray(data.valores) && data.valores.length > 0) {
+                    renderArancelesDinamicos(data.valores);
+                }
+            } catch (e) {
+                console.log('Carga remota de aranceles no disponible, usando valores estáticos por defecto.');
+            }
+        }
+
+        function renderArancelesDinamicos(valores) {
+            const femRows = valores.filter(v => String(v.genero).toLowerCase().includes('fem'));
+            const mascRows = valores.filter(v => String(v.genero).toLowerCase().includes('masc'));
+
+            const fmt = (num) => typeof num === 'number' ? '$ ' + num.toLocaleString('es-AR') : num;
+
+            if (femRows.length > 0) {
+                const tbodyFem = document.querySelector('#arancelesTablaFem tbody');
+                if (tbodyFem) {
+                    tbodyFem.innerHTML = femRows.map(r => `
+                        <tr class="hover:bg-slate-800/30 transition">
+                            <td class="py-3 px-3 sm:px-4 font-bold text-white">${r.categoria}</td>
+                            <td class="py-3 px-2 sm:px-3 text-center text-gray-400 whitespace-nowrap">${r.ano}</td>
+                            <td class="py-3 px-3 sm:px-4 text-right text-gray-300 whitespace-nowrap">${fmt(r.base)}</td>
+                            <td class="py-3 px-3 sm:px-4 text-right font-bold text-emerald-400 whitespace-nowrap">${fmt(r.desc)}</td>
+                        </tr>
+                    `).join('');
+                }
+            }
+
+            if (mascRows.length > 0) {
+                const tbodyMasc = document.querySelector('#arancelesTablaMasc tbody');
+                if (tbodyMasc) {
+                    tbodyMasc.innerHTML = mascRows.map(r => `
+                        <tr class="hover:bg-slate-800/30 transition">
+                            <td class="py-3 px-3 sm:px-4 font-bold text-white">${r.categoria}</td>
+                            <td class="py-3 px-2 sm:px-3 text-center text-gray-400 whitespace-nowrap">${r.ano}</td>
+                            <td class="py-3 px-3 sm:px-4 text-right text-gray-300 whitespace-nowrap">${fmt(r.base)}</td>
+                            <td class="py-3 px-3 sm:px-4 text-right font-bold text-emerald-400 whitespace-nowrap">${fmt(r.desc)}</td>
+                        </tr>
+                    `).join('');
+                }
+            }
         }
 
         function closeArancelesModal() {
@@ -627,7 +688,40 @@
             }
         }
 
+        function checkCategoryPaymentRestrictions() {
+            const cat = document.getElementById('categoria')?.value || '';
+            const isGranadero = cat.toUpperCase().includes('SOCIO HINCHA') || cat.toUpperCase().includes('GRANADERO');
+            const transfCard = document.getElementById('pay-card-transf');
+            const granaderoNotice = document.getElementById('granaderoPayNotice');
+
+            if (isGranadero) {
+                setPayMethod('debito');
+                if (transfCard) {
+                    transfCard.classList.add('opacity-40', 'pointer-events-none', 'cursor-not-allowed');
+                    transfCard.setAttribute('title', 'SOCIO HINCHA GRANADERO sólo permite adhesión por Débito Automático');
+                }
+                if (granaderoNotice) {
+                    granaderoNotice.classList.remove('hidden');
+                }
+            } else {
+                if (transfCard) {
+                    transfCard.classList.remove('opacity-40', 'pointer-events-none', 'cursor-not-allowed');
+                    transfCard.removeAttribute('title');
+                }
+                if (granaderoNotice) {
+                    granaderoNotice.classList.add('hidden');
+                }
+            }
+        }
+
         function setPayMethod(method) {
+            const cat = document.getElementById('categoria')?.value || '';
+            const isGranadero = cat.toUpperCase().includes('SOCIO HINCHA') || cat.toUpperCase().includes('GRANADERO');
+            if (isGranadero && method !== 'debito') {
+                alert('La categoría SOCIO HINCHA GRANADERO sólo permite adhesión mediante Débito Automático.');
+                method = 'debito';
+            }
+
             selectedPayMethod = method;
             const debitoCard = document.getElementById('pay-card-debito');
             const transfCard = document.getElementById('pay-card-transf');
@@ -636,7 +730,7 @@
 
             if (method === 'debito') {
                 if (debitoCard) debitoCard.className = 'pay-card selected';
-                if (transfCard) transfCard.className = 'pay-card';
+                if (transfCard) transfCard.className = isGranadero ? 'pay-card opacity-40 pointer-events-none cursor-not-allowed' : 'pay-card';
                 if (debitoBox) debitoBox.style.display = 'block';
                 if (transfBox) transfBox.style.display = 'none';
             } else {
@@ -749,6 +843,7 @@
                 { id: 'nombre', name: 'Nombre' },
                 { id: 'apellido', name: 'Apellido' },
                 { id: 'dni', name: 'DNI' },
+                { id: 'categoria', name: 'Categoría' },
                 { id: 'domicilio', name: 'Domicilio' },
                 { id: 'email', name: 'Email' }
             ];
@@ -843,6 +938,10 @@
         function goToStep(step) {
             if (step < 1 || step > 3) return;
 
+            if (step === 2) {
+                checkCategoryPaymentRestrictions();
+            }
+
             // Validar avance de Paso 1 a Paso 2 o 3
             if (currentStep === 1 && step > 1) {
                 if (!validateStep1()) {
@@ -901,13 +1000,18 @@
             const nom = document.getElementById('nombre').value.toUpperCase().trim();
             const ape = document.getElementById('apellido').value.toUpperCase().trim();
             const dni = document.getElementById('dni').value.trim();
+            const cat = document.getElementById('categoria')?.value?.trim() || '';
 
             const nameEl = document.getElementById('carnetName');
             const dniEl = document.getElementById('carnetDni');
+            const numEl = document.getElementById('carnetNum');
+            const catEl = document.getElementById('carnetCat');
             const añoEl = document.getElementById('carnetAño');
 
             if (nameEl) nameEl.innerText = (nom || ape) ? (nom + ' ' + ape) : 'NOMBRE APELLIDO';
             if (dniEl) dniEl.innerText = dni ? ('DNI: ' + dni) : 'DNI: XX.XXX.XXX';
+            if (numEl) numEl.innerText = 'SOCIO N°: LFC-' + (dni ? String(dni).slice(-4) : '001');
+            if (catEl) catEl.innerText = 'CATEGORÍA: ' + (cat ? cat.toUpperCase() : 'SIN SELECCIONAR');
 
             const now = new Date();
             const mes = String(now.getMonth() + 1).padStart(2, '0');
@@ -956,7 +1060,7 @@
                 nombre: document.getElementById('nombre')?.value || '',
                 apellido: document.getElementById('apellido')?.value || '',
                 dni: dniVal || '',
-                categoria: document.getElementById('categoriaSocio')?.value || 'SOCIO HINCHA GRANADERO',
+                categoria: document.getElementById('categoria')?.value || document.getElementById('categoriaSocio')?.value || 'SOCIO HINCHA GRANADERO',
                 email: emailVal || '',
                 domicilio: document.getElementById('domicilio')?.value || '',
                 pago: selectedPayMethod === 'debito' ? 'DEBITO' : 'TRANSFERENCIA / EFECTIVO',
