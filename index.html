@@ -270,7 +270,7 @@
                                 CATEGORÍA: SIN SELECCIONAR
                             </div>
                             <div id="carnetAño" class="text-[11px] font-semibold text-slate-200 uppercase tracking-wide">
-                                AÑO Y MES DE INGRESO: XXXX
+                                DESDE: XXXX
                             </div>
                         </div>
                     </div>
@@ -1087,7 +1087,7 @@
             const now = new Date();
             const mes = String(now.getMonth() + 1).padStart(2, '0');
             const anio = now.getFullYear();
-            if (añoEl) añoEl.innerText = 'AÑO Y MES DE INGRESO: ' + anio + ' / ' + mes;
+            if (añoEl) añoEl.innerText = 'DESDE: ' + anio + ' / ' + mes;
         }
 
         let isSubmitting = false;
@@ -1110,19 +1110,44 @@
             const dniVal = document.getElementById('dni')?.value?.trim();
             const emailVal = document.getElementById('email')?.value?.trim()?.toLowerCase();
 
-            // Verificación para evitar duplicados locales
-            if (dniVal && localStorage.getItem('submitted_dni_' + dniVal)) {
-                alert('El DNI ' + dniVal + ' ya registra un alta enviada previamente. Mostramos tu Carnet Digital Oficial.');
-                showSuccessModal();
-                return;
-            }
-
             isSubmitting = true;
 
             const btnSubmit = document.getElementById('btnSubmitForm') || document.querySelector('button[onclick="submitForm()"]');
             if (btnSubmit) {
                 btnSubmit.disabled = true;
                 btnSubmit.classList.add('opacity-50', 'pointer-events-none', 'cursor-not-allowed');
+                btnSubmit.innerText = 'VERIFICANDO PADRÓN EN VIVO...';
+            }
+
+            // Verificación en tiempo real contra el Google Sheet actual (si borraste la fila en el Excel, permite dar de alta de nuevo)
+            if (dniVal) {
+                try {
+                    const cleanDni = dniVal.replace(/\D/g, '');
+                    const checkResp = await fetch(`${GAS_URL}?action=checkDni&dni=${encodeURIComponent(cleanDni)}&t=${Date.now()}`);
+                    if (checkResp.ok) {
+                        const checkData = await checkResp.json();
+                        if (checkData && checkData.exists === true) {
+                            alert('El DNI ' + dniVal + ' ya registra un alta activa en el Excel de socios. Mostramos tu Carnet Digital Oficial.');
+                            isSubmitting = false;
+                            if (btnSubmit) {
+                                btnSubmit.disabled = false;
+                                btnSubmit.classList.remove('opacity-50', 'pointer-events-none', 'cursor-not-allowed');
+                                btnSubmit.innerText = 'FINALIZAR Y GENERAR CARNET OFICIAL →';
+                            }
+                            showSuccessModal();
+                            return;
+                        } else {
+                            // Si no está en el Excel (ej: se eliminó la fila), limpiamos cualquier memoria vieja del navegador
+                            localStorage.removeItem('submitted_dni_' + dniVal);
+                            localStorage.removeItem('submitted_dni_' + cleanDni);
+                        }
+                    }
+                } catch (errCheck) {
+                    console.warn('No se pudo verificar DNI previo online, continuando con el alta:', errCheck);
+                }
+            }
+
+            if (btnSubmit) {
                 btnSubmit.innerText = 'PROCESANDO ADHESIÓN...';
             }
 
