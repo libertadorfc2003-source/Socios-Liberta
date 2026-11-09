@@ -665,6 +665,12 @@
         }
 
         function renderArancelesDinamicos(valores) {
+            valores = valores.map(v => {
+                if (String(v.categoria).toLowerCase().includes('plantel superior') && Number(String(v.base).replace(/[^\d]/g, '')) === 100000) {
+                    return { ...v, base: 115000, desc: 105000 };
+                }
+                return v;
+            });
             const femRows = valores.filter(v => String(v.genero).toLowerCase().includes('fem'));
             const mascRows = valores.filter(v => String(v.genero).toLowerCase().includes('masc'));
             const hinchaRows = valores.filter(v => {
