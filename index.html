@@ -510,8 +510,8 @@
                             </div>
 
                             <div class="p-4 sm:p-5 bg-blue-950/80 border-2 border-white/50 rounded-2xl text-xs sm:text-sm text-sky-100 font-medium leading-relaxed shadow-xl my-2 space-y-1.5">
-                                <strong class="text-white font-black uppercase tracking-wide block">Aviso de Privacidad e Interfast:</strong>
-                                <p>No se guardan datos de tarjeta ni CBU en el padrón general de socios. La adhesión se gestiona en <strong>Interfast</strong> y la planilla oficial (CBU o Tarjeta de Crédito) se autocompleta automáticamente en el archivo privado de administración para firmar en <strong class="text-white font-bold">Miguel de Azcuénaga 1650, B1638 BCH, Provincia de Buenos Aires</strong>.</p>
+                                <strong class="text-white font-black uppercase tracking-wide block">🔒 Privacidad y Seguridad de tus Datos:</strong>
+                                <p>Tus datos son <strong>100% privados y confidenciales</strong>. Serán enviados únicamente a la entidad emisora para gestionar el cobro de la cuota social.</p>
                             </div>
 
                             <!-- SELECTOR DE MODALIDAD DE DÉBITO AUTOMÁTICO (2 OPCIONES: CAJA DE AHORRO CBU / CUENTA CORRIENTE TARJETA DE CRÉDITO) -->
@@ -1745,6 +1745,21 @@ Libertador Fútbol Club - Un club para y por su gente.`;
 
         let isSubmittingBaja = false;
 
+        function updateBajaMotivoCounter(el) {
+            if (!el) return;
+            const len = el.value.trim().length;
+            const counter = document.getElementById('bajaMotivoCounter');
+            if (counter) {
+                counter.innerText = len + ' / 100 caracteres mínimos';
+                counter.className = len >= 100
+                    ? 'text-[11px] font-bold text-emerald-400'
+                    : 'text-[11px] font-semibold text-amber-400';
+            }
+            if (len >= 100) {
+                el.classList.remove('border-2', 'border-red-500');
+            }
+        }
+
         async function submitBajaForm() {
             if (isSubmittingBaja) return;
 
@@ -1755,10 +1770,20 @@ Libertador Fútbol Club - Un club para y por su gente.`;
             const dni = document.getElementById('bajaDni')?.value?.trim()?.replace(/\D/g, '') || '';
             const email = document.getElementById('bajaEmail')?.value?.trim()?.toLowerCase() || '';
             const cat = document.getElementById('bajaCategoria')?.value || '';
-            const motivo = document.getElementById('bajaMotivo')?.value?.trim() || '';
+            const motivoEl = document.getElementById('bajaMotivo');
+            const motivo = motivoEl?.value?.trim() || '';
 
             if (!nom || !ape || (!dni && !nroSocioBaja) || !email || !cat || !motivo) {
                 alert('Por favor, completá todos los campos requeridos (incluyendo DNI o N° de socio y motivo) para procesar la baja.');
+                return;
+            }
+
+            if (motivo.length < 100) {
+                if (motivoEl) {
+                    motivoEl.classList.add('border-2', 'border-red-500');
+                    motivoEl.focus();
+                }
+                alert('Por favor, detallá el motivo de baja con un mínimo de 100 caracteres (actualmente escribiste ' + motivo.length + ' caracteres).');
                 return;
             }
 
@@ -2059,8 +2084,11 @@ Libertador Fútbol Club - Un club para y por su gente.`;
                 </div>
 
                 <div>
-                    <label class="block text-xs font-bold text-gray-300 uppercase mb-1">Motivo de baja *</label>
-                    <textarea id="bajaMotivo" rows="3" required placeholder="Escribí brevemente el motivo..." class="w-full p-3 rounded-xl bg-slate-950 border border-slate-700 text-white text-xs sm:text-sm focus:border-slate-500 focus:outline-none resize-none"></textarea>
+                    <div class="flex items-center justify-between mb-1">
+                        <label class="block text-xs font-bold text-gray-300 uppercase">Motivo de baja (mínimo 100 caracteres) *</label>
+                        <span id="bajaMotivoCounter" class="text-[11px] font-semibold text-amber-400">0 / 100 caracteres mínimos</span>
+                    </div>
+                    <textarea id="bajaMotivo" rows="3" minlength="100" required placeholder="Detallá el motivo de tu solicitud (mínimo 100 caracteres)..." oninput="updateBajaMotivoCounter(this)" class="w-full p-3 rounded-xl bg-slate-950 border border-slate-700 text-white text-xs sm:text-sm focus:border-slate-500 focus:outline-none resize-none"></textarea>
                 </div>
 
                 <div class="flex items-center gap-3 pt-2 border-t border-slate-800">
