@@ -57,14 +57,38 @@
         }
         .input-custom {
             width: 100%;
+            max-width: 100%;
+            min-width: 0;
+            box-sizing: border-box;
             background-color: rgba(6, 16, 30, 0.85);
             border: 1px solid rgba(56, 189, 248, 0.3);
             border-radius: 0.75rem;
             padding: 0.75rem 1rem;
             color: #FFFFFF;
             font-size: 0.875rem;
+            line-height: 1.35;
+            min-height: 2.875rem;
             outline: none;
             transition: all 0.2s ease;
+        }
+        input[type="date"].input-custom {
+            -webkit-appearance: none;
+            appearance: none;
+            display: block;
+            width: 100%;
+            max-width: 100%;
+            min-width: 0;
+            min-height: 2.875rem;
+            color-scheme: dark;
+        }
+        input[type="date"].input-custom::-webkit-date-and-time-value {
+            text-align: left;
+            min-height: 1.35em;
+        }
+        input[type="date"].input-custom::-webkit-calendar-picker-indicator {
+            filter: invert(1) brightness(1.2);
+            opacity: 0.85;
+            cursor: pointer;
         }
         .input-custom:focus {
             border-color: #38BDF8;
@@ -176,9 +200,9 @@
         <div class="text-sm sm:text-lg font-black tracking-widest text-white uppercase flex items-center gap-2">
             LIBERTADOR FÚTBOL CLUB
         </div>
-        <a href="https://www.instagram.com/fclibertadorfcoficial/" target="_blank" rel="noopener noreferrer" class="text-xs sm:text-sm font-bold text-libertador-sky hover:text-white transition flex items-center gap-2 hover:underline">
+        <a href="https://www.instagram.com/fclibertadoroficial/" target="_blank" rel="noopener noreferrer" class="text-xs sm:text-sm font-bold text-libertador-sky hover:text-white transition flex items-center gap-2 hover:underline">
             <svg class="w-4 h-4 fill-current text-libertador-sky" viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg>
-            <span>@fclibertadorfcoficial</span>
+            <span>@fclibertadoroficial</span>
         </a>
     </header>
 
@@ -354,14 +378,14 @@
                         </div>
 
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
-                            <div>
+                            <div class="min-w-0 w-full">
                                 <label class="block text-xs font-bold uppercase text-gray-300 mb-1.5">DNI del Socio *</label>
                                 <input type="text" id="dni" required placeholder="Ej: 42123456" minlength="7" maxlength="8" inputmode="numeric" class="input-custom font-mono" oninput="this.value=this.value.replace(/\D/g,''); cleanError(this); syncPropioResponsable(); updateCarnetLive(); onDniInputLive();" onblur="verificarDniEnVivo(true)">
                                 <div id="dniExistenteWarning" class="hidden mt-2 p-3 rounded-xl bg-red-950/90 border border-red-500 text-xs text-red-200 font-semibold leading-snug"></div>
                             </div>
-                            <div>
+                            <div class="min-w-0 w-full">
                                 <label class="block text-xs font-bold uppercase text-gray-300 mb-1.5">Fecha de Nacimiento *</label>
-                                <input type="date" id="fechaNacimiento" required class="input-custom" onchange="cleanError(this)">
+                                <input type="date" id="fechaNacimiento" required class="input-custom w-full max-w-full block" onchange="cleanError(this)">
                             </div>
                         </div>
 
