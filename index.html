@@ -508,7 +508,7 @@
                             <div id="pay-card-debito" class="pay-card selected" onclick="setPayMethod('debito')">
                                 <span class="block text-2xl mb-1">💳</span>
                                 <span class="block text-xs font-black uppercase">Tarjeta de Crédito</span>
-                                <span class="block text-[10px] text-libertador-sky mt-1">(Adhesión Débito Automático)</span>
+                                <span class="block text-[10px] text-libertador-sky mt-1">(Solo VISA o MASTERCARD)</span>
                             </div>
                             <div id="pay-card-transf" class="pay-card" onclick="setPayMethod('transferencia')">
                                 <span class="block text-2xl mb-1">💵</span>
@@ -520,13 +520,13 @@
                         <!-- AVISO RESTRICCIÓN SOCIO GRANA -->
                         <div id="granaderoPayNotice" class="hidden p-4 rounded-2xl bg-blue-950/80 border-2 border-white/50 text-white text-xs font-sans font-normal mb-4 shadow-xl" style="font-family: 'Google Sans', 'Inter', sans-serif;">
                             <strong class="text-white font-bold block text-sm mb-0.5">Categoría Socio Grana:</strong>
-                            La modalidad de pago exclusiva para esta categoría es <strong>Tarjeta de Crédito (Débito Automático)</strong>.
+                            La modalidad de pago exclusiva para esta categoría es <strong>Tarjeta de Crédito (Solo VISA o MASTERCARD)</strong>.
                         </div>
 
                         <!-- TARJETA DE CRÉDITO (DÉBITO AUTOMÁTICO) FIELDS -->
                         <div id="debito-box" class="p-5 rounded-xl bg-libertador-dark border border-white/30 space-y-4">
                             <div class="text-xs font-black text-libertador-sky uppercase">
-                                Adhesión al Débito Automático con Tarjeta de Crédito
+                                Adhesión con Tarjeta de Crédito (Exclusivo VISA o MASTERCARD)
                             </div>
 
                             <div class="p-4 sm:p-5 bg-blue-950/80 border-2 border-white/50 rounded-2xl text-xs sm:text-sm text-white font-sans font-normal leading-relaxed shadow-xl my-2 space-y-2.5" style="font-family: 'Google Sans', 'Inter', sans-serif;">
@@ -536,7 +536,8 @@
                                 </div>
                                 <div class="pt-2.5 border-t border-white/20 text-white space-y-1.5">
                                     <strong class="text-sky-300 font-bold uppercase tracking-wide block">Importante:</strong>
-                                    <p>• La adhesión al débito automático requiere acercarse personalmente para <strong>firmar físicamente en las oficinas del club</strong>.</p>
+                                    <p>• La adhesión requiere acercarse personalmente para <strong>firmar físicamente en las oficinas del club</strong>.</p>
+                                    <p>• <strong>Tarjetas aceptadas:</strong> únicamente se aceptan tarjetas de crédito <strong>VISA o MASTERCARD</strong>.</p>
                                     <p>• <strong>Tené el DNI a mano:</strong> al final de este paso vas a necesitar subir o sacar una foto del <strong>Frente y Dorso del DNI</strong>.</p>
                                 </div>
                             </div>
@@ -591,32 +592,51 @@
                                 </div>
 
                                 <div class="text-[11px] font-black uppercase text-sky-300 tracking-wider border-b border-white/15 pb-1.5 pt-2">
-                                    2. Datos de la Tarjeta de Crédito
+                                    2. Datos de la Tarjeta de Crédito (Únicamente VISA o MASTERCARD)
                                 </div>
 
                                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                     <div>
-                                        <label class="block text-xs font-bold uppercase text-gray-300 mb-1">Tipo de Tarjeta (Solo Visa o Mastercard) *</label>
+                                        <label class="block text-xs font-bold uppercase text-gray-300 mb-1">Marca de Tarjeta (Solo VISA o MASTERCARD) *</label>
                                         <select id="tcMarca" class="input-custom font-bold" onchange="cleanError(this); onChangeMarcaTarjeta()">
                                             <option value="VISA">VISA</option>
                                             <option value="MASTERCARD">MASTERCARD</option>
                                         </select>
                                     </div>
-                                </div>
-
-                                <div>
-                                    <label class="block text-xs font-bold uppercase text-gray-300 mb-1">Número de Tarjeta (16 dígitos) *</label>
-                                    <input type="text" id="tcNumero" placeholder="XXXX XXXX XXXX XXXX" maxlength="19" inputmode="numeric" class="input-custom font-mono tracking-widest text-base" oninput="cleanError(this); formatCardNumberInput(this)">
+                                    <div>
+                                        <label class="block text-xs font-bold uppercase text-gray-300 mb-1">Banco Emisor *</label>
+                                        <select id="tcBancoEmisor" class="input-custom font-semibold" onchange="cleanError(this)">
+                                            <option value="">-- Seleccioná el Banco Emisor --</option>
+                                            <option value="BANCO MACRO">Banco Macro</option>
+                                            <option value="BANCO GALICIA">Banco Galicia</option>
+                                            <option value="BANCO SANTANDER">Banco Santander</option>
+                                            <option value="BANCO BBVA">BBVA Argentina</option>
+                                            <option value="BANCO NACION">Banco Nación (BNA)</option>
+                                            <option value="BANCO PROVINCIA">Banco Provincia (BAPRO)</option>
+                                            <option value="BANCO CIUDAD">Banco Ciudad</option>
+                                            <option value="BANCO CREDICOOP">Banco Credicoop</option>
+                                            <option value="BANCO ICBC">ICBC</option>
+                                            <option value="BANCO PATAGONIA">Banco Patagonia</option>
+                                            <option value="BANCO SUPERVIELLE">Banco Supervielle</option>
+                                            <option value="BANCO HIPOTECARIO">Banco Hipotecario</option>
+                                            <option value="BANCO COMAFI">Banco Comafi</option>
+                                            <option value="BANCO ITAU">Banco Itaú</option>
+                                            <option value="BANCO COLUMBIA">Banco Columbia</option>
+                                            <option value="BRUBANK">Brubank</option>
+                                            <option value="NARANJA X">Naranja X (Visa / Mastercard)</option>
+                                            <option value="OTRO BANCO">Otro Banco / Entidad Emisora</option>
+                                        </select>
+                                    </div>
                                 </div>
 
                                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                     <div>
-                                        <label class="block text-xs font-bold uppercase text-gray-300 mb-1">Vencimiento (MM/AA) *</label>
-                                        <input type="text" id="tcVencimiento" placeholder="MM/AA (Ej: 08/29)" maxlength="5" inputmode="numeric" class="input-custom font-mono tracking-widest" oninput="cleanError(this); formatExpiryInput(this)">
+                                        <label class="block text-xs font-bold uppercase text-gray-300 mb-1">Número de Tarjeta (16 dígitos) *</label>
+                                        <input type="text" id="tcNumero" placeholder="XXXX XXXX XXXX XXXX" maxlength="19" inputmode="numeric" class="input-custom font-mono tracking-widest text-base" oninput="cleanError(this); formatCardNumberInput(this)">
                                     </div>
                                     <div>
-                                        <label class="block text-xs font-bold uppercase text-gray-300 mb-1">Banco Emisor *</label>
-                                        <input type="text" id="tcBancoEmisor" placeholder="Ej: Banco Galicia / Santander / BBVA" class="input-custom" oninput="cleanError(this)">
+                                        <label class="block text-xs font-bold uppercase text-gray-300 mb-1">Vencimiento (MM/AA) *</label>
+                                        <input type="text" id="tcVencimiento" placeholder="MM/AA (Ej: 08/29)" maxlength="5" inputmode="numeric" class="input-custom font-mono tracking-widest" oninput="cleanError(this); formatExpiryInput(this)">
                                     </div>
                                 </div>
 
