@@ -507,8 +507,8 @@
                         <div class="grid grid-cols-2 gap-4 mb-4">
                             <div id="pay-card-debito" class="pay-card selected" onclick="setPayMethod('debito')">
                                 <span class="block text-2xl mb-1">💳</span>
-                                <span class="block text-xs font-black uppercase">Tarjeta / Débito</span>
-                                <span class="block text-[10px] text-libertador-sky mt-1">(Adhesión Interfast)</span>
+                                <span class="block text-xs font-black uppercase">Tarjeta de Crédito</span>
+                                <span class="block text-[10px] text-libertador-sky mt-1">(Adhesión Débito Automático)</span>
                             </div>
                             <div id="pay-card-transf" class="pay-card" onclick="setPayMethod('transferencia')">
                                 <span class="block text-2xl mb-1">💵</span>
@@ -520,13 +520,13 @@
                         <!-- AVISO RESTRICCIÓN SOCIO GRANA -->
                         <div id="granaderoPayNotice" class="hidden p-4 rounded-2xl bg-blue-950/80 border-2 border-white/50 text-white text-xs font-sans font-normal mb-4 shadow-xl" style="font-family: 'Google Sans', 'Inter', sans-serif;">
                             <strong class="text-white font-bold block text-sm mb-0.5">Categoría Socio Grana:</strong>
-                            La modalidad de pago exclusiva para esta categoría es <strong>Tarjeta / Débito Automático</strong>.
+                            La modalidad de pago exclusiva para esta categoría es <strong>Tarjeta de Crédito (Débito Automático)</strong>.
                         </div>
 
-                        <!-- TARJETA / DÉBITO AUTOMÁTICO INTERFAST FIELDS -->
+                        <!-- TARJETA DE CRÉDITO (DÉBITO AUTOMÁTICO) FIELDS -->
                         <div id="debito-box" class="p-5 rounded-xl bg-libertador-dark border border-white/30 space-y-4">
                             <div class="text-xs font-black text-libertador-sky uppercase">
-                                Adhesión al Débito Automático (Interfast)
+                                Adhesión al Débito Automático con Tarjeta de Crédito
                             </div>
 
                             <div class="p-4 sm:p-5 bg-blue-950/80 border-2 border-white/50 rounded-2xl text-xs sm:text-sm text-white font-sans font-normal leading-relaxed shadow-xl my-2 space-y-2.5" style="font-family: 'Google Sans', 'Inter', sans-serif;">
@@ -541,86 +541,8 @@
                                 </div>
                             </div>
 
-                            <!-- SELECTOR DE MODALIDAD DE DÉBITO AUTOMÁTICO (2 OPCIONES: CBU / TARJETA DE CRÉDITO) -->
-                            <div class="p-4 rounded-xl bg-slate-900/95 border-2 border-sky-400/70 space-y-2">
-                                <label class="block text-xs font-black uppercase text-sky-300 tracking-wide">
-                                    ¿Con qué medio querés adherirte al Débito Automático? *
-                                </label>
-                                <select id="medioDebito" class="input-custom font-bold text-white border-sky-400/80" onchange="onChangeMedioDebito()">
-                                    <option value="CAJA DE AHORRO">CBU</option>
-                                    <option value="TARJETA DE CREDITO">Tarjeta de crédito</option>
-                                </select>
-                            </div>
-
-                            <!-- SUB-FORMULARIO A: CAJA DE AHORRO (CBU) -->
-                            <div id="subbox-cbu" class="space-y-3 pt-1">
-                                <div class="text-[11px] font-black uppercase text-sky-300 tracking-wider border-b border-white/15 pb-1.5">
-                                    Datos de la Cuenta Bancaria (<span id="lblTipoCuentaActiva">CAJA DE AHORRO</span>)
-                                </div>
-
-                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                    <div>
-                                        <label class="block text-xs font-bold uppercase text-gray-300 mb-1">Nombre y Apellido del Titular *</label>
-                                        <input type="text" id="bancoTitular" placeholder="Nombre y Apellido del Titular" class="input-custom" oninput="cleanError(this); this.value=this.value.replace(/[^a-zA-ZáéíóúÁÉÍÓÚñÑ\s]/g,'')">
-                                    </div>
-                                    <div>
-                                        <label class="block text-xs font-bold uppercase text-gray-300 mb-1">DNI del Titular *</label>
-                                        <input type="text" id="bancoTitularDni" placeholder="DNI Titular" maxlength="8" inputmode="numeric" class="input-custom font-mono" oninput="cleanError(this); this.value=this.value.replace(/\D/g,'')">
-                                    </div>
-                                </div>
-
-                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                    <div>
-                                        <label class="block text-xs font-bold uppercase text-gray-300 mb-1">Teléfono del Titular *</label>
-                                        <input type="tel" id="bancoTitularTelefono" placeholder="Ej: 11 2345-6789" class="input-custom font-mono" oninput="cleanError(this); this.value=this.value.replace(/[^\d+\s-]/g,'')">
-                                    </div>
-                                    <div>
-                                        <label class="block text-xs font-bold uppercase text-gray-300 mb-1">Email del Titular *</label>
-                                        <input type="email" id="bancoTitularEmail" placeholder="titular@email.com" class="input-custom" oninput="cleanError(this)">
-                                    </div>
-                                </div>
-
-                                <div>
-                                    <label class="block text-xs font-bold uppercase text-gray-300 mb-1">Domicilio del Titular *</label>
-                                    <input type="text" id="domicilio" placeholder="Ej: Av. Libertador 1500, Vicente López" class="input-custom" oninput="cleanError(this)">
-                                </div>
-
-                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                    <div>
-                                        <label class="block text-xs font-bold uppercase text-gray-300 mb-1">Entidad Bancaria *</label>
-                                        <select id="bancoNombre" class="input-custom" onchange="cleanError(this)">
-                                            <option value="">-- Seleccioná tu Banco --</option>
-                                            <option value="BANCO MACRO">Banco Macro</option>
-                                            <option value="BANCO GALICIA">Banco Galicia</option>
-                                            <option value="BANCO SANTANDER">Banco Santander</option>
-                                            <option value="BANCO BBVA">BBVA Argentina</option>
-                                            <option value="BANCO NACION">Banco Nación (BNA)</option>
-                                            <option value="BANCO PROVINCIA">Banco Provincia (BAPRO)</option>
-                                            <option value="BANCO CIUDAD">Banco Ciudad</option>
-                                            <option value="BANCO CREDICOOP">Banco Credicoop</option>
-                                            <option value="BANCO ICBC">ICBC</option>
-                                            <option value="BANCO PATAGONIA">Banco Patagonia</option>
-                                            <option value="BANCO SUPERVIELLE">Banco Supervielle</option>
-                                            <option value="MERCADO PAGO">Mercado Pago</option>
-                                            <option value="BRUBANK">Brubank</option>
-                                            <option value="UALA">Ualá</option>
-                                            <option value="OTRO">Otro Banco / Entidad</option>
-                                        </select>
-                                    </div>
-                                    <div>
-                                        <label class="block text-xs font-bold uppercase text-gray-300 mb-1">Tipo de Cuenta Seleccionada</label>
-                                        <input type="text" id="tipoCuentaDisplay" value="CAJA DE AHORRO" disabled class="input-custom opacity-80 font-bold text-sky-300">
-                                    </div>
-                                </div>
-
-                                <div>
-                                    <label class="block text-xs font-bold uppercase text-gray-300 mb-1">CBU para Planilla Interfast (22 dígitos numéricos) *</label>
-                                    <input type="text" id="bancoCbu" placeholder="Ej: 0110599520000001234567" maxlength="22" inputmode="numeric" class="input-custom font-mono tracking-wider" oninput="this.value=this.value.replace(/\D/g,''); cleanError(this)">
-                                </div>
-                            </div>
-
-                            <!-- SUB-FORMULARIO B: TARJETA DE CRÉDITO (FORMULARIO 08 INTERFAST) -->
-                            <div id="subbox-tarjeta" class="space-y-4 pt-1 hidden">
+                            <!-- FORMULARIO TARJETA DE CRÉDITO -->
+                            <div id="subbox-tarjeta" class="space-y-4 pt-1">
                                 <div class="text-[11px] font-black uppercase text-sky-300 tracking-wider border-b border-white/15 pb-1.5">
                                     1. Datos del Titular de la Tarjeta de Crédito
                                 </div>
@@ -1153,25 +1075,30 @@
         let dniDorsoBase64 = '';
         let cameraTarget = 'perfil'; // 'perfil' | 'dniFrente' | 'dniDorso'
 
+        function renderizarFuenteDniEnCanvas(source, width, height, callback) {
+            const canvas = document.createElement('canvas');
+            canvas.width = 640;
+            canvas.height = 400;
+            const ctx = canvas.getContext('2d');
+            ctx.fillStyle = '#FFFFFF';
+            ctx.fillRect(0, 0, 640, 400);
+
+            const srcW = width || source.width || 640;
+            const srcH = height || source.height || 400;
+            const scale = Math.min(640 / srcW, 400 / srcH);
+            const drawW = srcW * scale;
+            const drawH = srcH * scale;
+            const offsetX = (640 - drawW) / 2;
+            const offsetY = (400 - drawH) / 2;
+            ctx.drawImage(source, offsetX, offsetY, drawW, drawH);
+
+            callback(canvas.toDataURL('image/jpeg', 0.82));
+        }
+
         function normalizarImagenDni640x400(dataUrl, callback) {
             const img = new Image();
             img.onload = function() {
-                const canvas = document.createElement('canvas');
-                canvas.width = 640;
-                canvas.height = 400;
-                const ctx = canvas.getContext('2d');
-                ctx.fillStyle = '#FFFFFF';
-                ctx.fillRect(0, 0, 640, 400);
-
-                // Ajustar la imagen manteniendo proporción centrada dentro del lienzo 640x400
-                const scale = Math.min(640 / img.width, 400 / img.height);
-                const drawW = img.width * scale;
-                const drawH = img.height * scale;
-                const offsetX = (640 - drawW) / 2;
-                const offsetY = (400 - drawH) / 2;
-                ctx.drawImage(img, offsetX, offsetY, drawW, drawH);
-
-                callback(canvas.toDataURL('image/jpeg', 0.82));
+                renderizarFuenteDniEnCanvas(img, img.naturalWidth || img.width, img.naturalHeight || img.height, callback);
             };
             img.src = dataUrl;
         }
@@ -1197,30 +1124,73 @@
         }
 
         function handleDniPhoto(event, lado) {
-            const file = event.target.files[0];
+            const file = event.target.files && event.target.files[0];
             if (!file) return;
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                normalizarImagenDni640x400(e.target.result, function(normalizedJpg) {
-                    asignarFotoDniNormalizada(lado, normalizedJpg);
-                });
-            };
-            reader.readAsDataURL(file);
+
+            if (typeof createImageBitmap === 'function') {
+                createImageBitmap(file, { imageOrientation: 'from-image' })
+                    .then(function(bitmap) {
+                        renderizarFuenteDniEnCanvas(bitmap, bitmap.width, bitmap.height, function(normalizedJpg) {
+                            if (bitmap.close) bitmap.close();
+                            asignarFotoDniNormalizada(lado, normalizedJpg);
+                        });
+                    })
+                    .catch(function() {
+                        const reader = new FileReader();
+                        reader.onload = function(e) {
+                            normalizarImagenDni640x400(e.target.result, function(normalizedJpg) {
+                                asignarFotoDniNormalizada(lado, normalizedJpg);
+                            });
+                        };
+                        reader.readAsDataURL(file);
+                    });
+            } else {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    normalizarImagenDni640x400(e.target.result, function(normalizedJpg) {
+                        asignarFotoDniNormalizada(lado, normalizedJpg);
+                    });
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        function renderizarFotoPerfilRecortada(source, srcW, srcH, callback) {
+            // Proporción exacta del carnet digital en web y en el email (100x115 -> 300x345 px)
+            // Realiza recorte centrado ("object-fit: cover") directo en el lienzo para que no llegue estirada ni deformada en Gmail
+            const targetW = 300;
+            const targetH = 345;
+            const w = Math.max(1, srcW || source.width || 300);
+            const h = Math.max(1, srcH || source.height || 345);
+
+            const canvas = document.createElement('canvas');
+            canvas.width = targetW;
+            canvas.height = targetH;
+            const ctx = canvas.getContext('2d');
+            ctx.fillStyle = '#002852';
+            ctx.fillRect(0, 0, targetW, targetH);
+
+            const scale = Math.max(targetW / w, targetH / h);
+            const drawW = w * scale;
+            const drawH = h * scale;
+            const offsetX = (targetW - drawW) / 2;
+            // En fotos verticales de celular, priorizar levemente el tercio superior donde se ubica el rostro
+            const offsetY = (targetH - drawH) * 0.35;
+
+            ctx.drawImage(source, offsetX, offsetY, drawW, drawH);
+
+            let outDataUrl = canvas.toDataURL('image/png');
+            // Si el PNG supera ~260 KB en base64, exportar JPEG de alta calidad para garantizar entrega inmediata al backend
+            if (outDataUrl.length > 350000) {
+                outDataUrl = canvas.toDataURL('image/jpeg', 0.90);
+            }
+            callback(outDataUrl);
         }
 
         function convertirFotoPerfilAPng(dataUrl, callback) {
             const img = new Image();
             img.onload = function() {
-                const maxSide = 600;
-                const scale = Math.min(1, maxSide / Math.max(img.width || 1, img.height || 1));
-                const w = Math.max(1, Math.round((img.width || 400) * scale));
-                const h = Math.max(1, Math.round((img.height || 400) * scale));
-                const canvas = document.createElement('canvas');
-                canvas.width = w;
-                canvas.height = h;
-                const ctx = canvas.getContext('2d');
-                ctx.drawImage(img, 0, 0, w, h);
-                callback(canvas.toDataURL('image/png'));
+                renderizarFotoPerfilRecortada(img, img.naturalWidth || img.width, img.naturalHeight || img.height, callback);
             };
             img.onerror = function() {
                 callback(dataUrl);
@@ -1250,8 +1220,27 @@
         }
 
         function handlePhoto(event) {
-            const file = event.target.files[0];
-            if (file) {
+            const file = event.target.files && event.target.files[0];
+            if (!file) return;
+
+            if (typeof createImageBitmap === 'function') {
+                createImageBitmap(file, { imageOrientation: 'from-image' })
+                    .then(function(bitmap) {
+                        renderizarFotoPerfilRecortada(bitmap, bitmap.width, bitmap.height, function(pngDataUrl) {
+                            if (bitmap.close) bitmap.close();
+                            aplicarFotoPerfilNormalizada(pngDataUrl);
+                        });
+                    })
+                    .catch(function() {
+                        const reader = new FileReader();
+                        reader.onload = function(e) {
+                            convertirFotoPerfilAPng(e.target.result, function(pngDataUrl) {
+                                aplicarFotoPerfilNormalizada(pngDataUrl);
+                            });
+                        };
+                        reader.readAsDataURL(file);
+                    });
+            } else {
                 const reader = new FileReader();
                 reader.onload = function(e) {
                     convertirFotoPerfilAPng(e.target.result, function(pngDataUrl) {
@@ -1578,26 +1567,6 @@
             return isValid;
         }
 
-        function onChangeMedioDebito() {
-            const medio = document.getElementById('medioDebito')?.value || 'CAJA DE AHORRO';
-            const subCbu = document.getElementById('subbox-cbu');
-            const subTc = document.getElementById('subbox-tarjeta');
-            const lblTipo = document.getElementById('lblTipoCuentaActiva');
-            const dispTipo = document.getElementById('tipoCuentaDisplay');
-
-            if (medio === 'TARJETA DE CREDITO') {
-                if (subCbu) subCbu.classList.add('hidden');
-                if (subTc) subTc.classList.remove('hidden');
-                precargarTitularDebitoDesdeResponsable();
-            } else {
-                if (subCbu) subCbu.classList.remove('hidden');
-                if (subTc) subTc.classList.add('hidden');
-                if (lblTipo) lblTipo.innerText = medio;
-                if (dispTipo) dispTipo.value = medio;
-                precargarTitularDebitoDesdeResponsable();
-            }
-        }
-
         function onChangeMarcaTarjeta() {
             const marca = document.getElementById('tcMarca')?.value || 'VISA';
             const otraWrap = document.getElementById('tcMarcaOtraWrapper');
@@ -1641,15 +1610,6 @@
             const respTelVal = document.getElementById('respTelefono')?.value?.trim() || '';
             const respEmailVal = document.getElementById('respEmail')?.value?.trim() || '';
 
-            const tit = document.getElementById('bancoTitular');
-            const titDni = document.getElementById('bancoTitularDni');
-            const titTel = document.getElementById('bancoTitularTelefono');
-            const titEmail = document.getElementById('bancoTitularEmail');
-            if (tit && !tit.value.trim() && respNom) tit.value = respNom;
-            if (titDni && !titDni.value.trim() && respDniVal) titDni.value = respDniVal;
-            if (titTel && !titTel.value.trim() && respTelVal) titTel.value = respTelVal;
-            if (titEmail && !titEmail.value.trim() && respEmailVal) titEmail.value = respEmailVal;
-
             const tcNom = document.getElementById('tcTitularNombre');
             const tcDni = document.getElementById('tcTitularDni');
             const tcTel = document.getElementById('tcTelefono');
@@ -1664,7 +1624,6 @@
 
         function validateStep2() {
             if (selectedPayMethod === 'debito') {
-                const medio = document.getElementById('medioDebito')?.value || 'CAJA DE AHORRO';
                 let isValid = true;
 
                 const markField = (el, ok) => {
@@ -1677,65 +1636,47 @@
                     }
                 };
 
-                if (medio === 'TARJETA DE CREDITO') {
-                    const tcNom = document.getElementById('tcTitularNombre');
-                    const tcDni = document.getElementById('tcTitularDni');
-                    const tcCuit = document.getElementById('tcTitularCuit');
-                    const tcDom = document.getElementById('tcDomicilio');
-                    const tcLoc = document.getElementById('tcLocalidad');
-                    const tcProv = document.getElementById('tcProvincia');
-                    const tcTel = document.getElementById('tcTelefono');
-                    const tcEm = document.getElementById('tcEmail');
-                    const tcMarca = document.getElementById('tcMarca');
-                    const tcMarcaOtra = document.getElementById('tcMarcaOtra');
-                    const tcNum = document.getElementById('tcNumero');
-                    const tcVto = document.getElementById('tcVencimiento');
-                    const tcBco = document.getElementById('tcBancoEmisor');
-                    const tcImp = document.getElementById('tcNombreImpreso');
+                const tcNom = document.getElementById('tcTitularNombre');
+                const tcDni = document.getElementById('tcTitularDni');
+                const tcCuit = document.getElementById('tcTitularCuit');
+                const tcDom = document.getElementById('tcDomicilio');
+                const tcLoc = document.getElementById('tcLocalidad');
+                const tcProv = document.getElementById('tcProvincia');
+                const tcTel = document.getElementById('tcTelefono');
+                const tcEm = document.getElementById('tcEmail');
+                const tcMarca = document.getElementById('tcMarca');
+                const tcMarcaOtra = document.getElementById('tcMarcaOtra');
+                const tcNum = document.getElementById('tcNumero');
+                const tcVto = document.getElementById('tcVencimiento');
+                const tcBco = document.getElementById('tcBancoEmisor');
+                const tcImp = document.getElementById('tcNombreImpreso');
 
-                    markField(tcNom, Boolean(tcNom && tcNom.value.trim().length >= 3));
-                    markField(tcDni, Boolean(tcDni && /^\d{7,8}$/.test(tcDni.value.trim())));
-                    const cuitDigits = tcCuit ? tcCuit.value.replace(/\D/g, '') : '';
-                    markField(tcCuit, cuitDigits.length === 11);
-                    markField(tcDom, Boolean(tcDom && tcDom.value.trim().length >= 3));
-                    markField(tcLoc, Boolean(tcLoc && tcLoc.value.trim().length >= 2));
-                    markField(tcProv, Boolean(tcProv && tcProv.value.trim().length >= 2));
-                    markField(tcTel, Boolean(tcTel && tcTel.value.replace(/\D/g, '').length >= 6));
-                    markField(tcEm, Boolean(tcEm && validarEmailFormato(tcEm.value.trim())));
+                markField(tcNom, Boolean(tcNom && tcNom.value.trim().length >= 3));
+                markField(tcDni, Boolean(tcDni && /^\d{7,8}$/.test(tcDni.value.trim())));
+                const cuitDigits = tcCuit ? tcCuit.value.replace(/\D/g, '') : '';
+                markField(tcCuit, cuitDigits.length === 11);
+                markField(tcDom, Boolean(tcDom && tcDom.value.trim().length >= 3));
+                markField(tcLoc, Boolean(tcLoc && tcLoc.value.trim().length >= 2));
+                markField(tcProv, Boolean(tcProv && tcProv.value.trim().length >= 2));
+                markField(tcTel, Boolean(tcTel && tcTel.value.replace(/\D/g, '').length >= 6));
+                markField(tcEm, Boolean(tcEm && validarEmailFormato(tcEm.value.trim())));
 
-                    if (tcMarca && tcMarca.value === 'OTRA') {
-                        markField(tcMarcaOtra, Boolean(tcMarcaOtra && tcMarcaOtra.value.trim().length >= 2));
-                    } else if (tcMarcaOtra) {
-                        tcMarcaOtra.classList.remove('border-2', 'border-red-500', 'bg-red-950/50');
-                    }
-
-                    const cardDigits = tcNum ? tcNum.value.replace(/\D/g, '') : '';
-                    markField(tcNum, cardDigits.length === 16);
-
-                    const vtoStr = tcVto ? tcVto.value.trim() : '';
-                    const vtoMatch = vtoStr.match(/^(\d{2})\/(\d{2})$/);
-                    const mesOk = vtoMatch ? (parseInt(vtoMatch[1], 10) >= 1 && parseInt(vtoMatch[1], 10) <= 12) : false;
-                    markField(tcVto, Boolean(vtoMatch && mesOk));
-
-                    markField(tcBco, Boolean(tcBco && tcBco.value.trim().length >= 2));
-                    markField(tcImp, Boolean(tcImp && tcImp.value.trim().length >= 3));
-                } else {
-                    const titular = document.getElementById('bancoTitular');
-                    const titularDni = document.getElementById('bancoTitularDni');
-                    const titularTel = document.getElementById('bancoTitularTelefono');
-                    const titularEmail = document.getElementById('bancoTitularEmail');
-                    const dom = document.getElementById('domicilio');
-                    const banco = document.getElementById('bancoNombre');
-                    const cbu = document.getElementById('bancoCbu');
-
-                    markField(titular, Boolean(titular && titular.value.trim().length >= 3));
-                    markField(titularDni, Boolean(titularDni && /^\d{7,8}$/.test(titularDni.value.trim())));
-                    markField(titularTel, Boolean(titularTel && titularTel.value.replace(/\D/g, '').length >= 6));
-                    markField(titularEmail, Boolean(titularEmail && validarEmailFormato(titularEmail.value.trim())));
-                    markField(dom, Boolean(dom && dom.value.trim().length >= 3));
-                    markField(banco, Boolean(banco && banco.value));
-                    markField(cbu, Boolean(cbu && cbu.value.replace(/\D/g, '').length === 22));
+                if (tcMarca && tcMarca.value === 'OTRA') {
+                    markField(tcMarcaOtra, Boolean(tcMarcaOtra && tcMarcaOtra.value.trim().length >= 2));
+                } else if (tcMarcaOtra) {
+                    tcMarcaOtra.classList.remove('border-2', 'border-red-500', 'bg-red-950/50');
                 }
+
+                const cardDigits = tcNum ? tcNum.value.replace(/\D/g, '') : '';
+                markField(tcNum, cardDigits.length === 16);
+
+                const vtoStr = tcVto ? tcVto.value.trim() : '';
+                const vtoMatch = vtoStr.match(/^(\d{2})\/(\d{2})$/);
+                const mesOk = vtoMatch ? (parseInt(vtoMatch[1], 10) >= 1 && parseInt(vtoMatch[1], 10) <= 12) : false;
+                markField(tcVto, Boolean(vtoMatch && mesOk));
+
+                markField(tcBco, Boolean(tcBco && tcBco.value.trim().length >= 2));
+                markField(tcImp, Boolean(tcImp && tcImp.value.trim().length >= 3));
 
                 // Validar obligatoriamente las fotos del Frente y Dorso del DNI en las dos cajas separadas
                 const boxFrente = document.getElementById('boxDniFrente');
@@ -1802,14 +1743,11 @@
 
             if (currentStep === 2 && step > 2) {
                 if (!validateStep2()) {
-                    const medio = document.getElementById('medioDebito')?.value || 'CAJA DE AHORRO';
                     const faltaDni = (!dniFrenteBase64 || !dniDorsoBase64);
                     if (faltaDni) {
                         alert('Por favor, completá todos los campos obligatorios resaltados en rojo y subí o sacá las 2 fotos del DNI del titular: 1. Frente del DNI y 2. Dorso del DNI.');
-                    } else if (medio === 'TARJETA DE CREDITO') {
-                        alert('Por favor, completá todos los campos obligatorios de la Tarjeta de Crédito resaltados en rojo (Titular, DNI, CUIT/CUIL de 11 dígitos, Domicilio, Localidad, Provincia, Teléfono, Email, 16 dígitos de la tarjeta, Vencimiento MM/AA, Banco Emisor y Nombre impreso).');
                     } else {
-                        alert('Por favor, completá los datos del titular (DNI de 7 u 8 dígitos), el domicilio, seleccioná la Entidad Bancaria y los 22 dígitos del CBU.');
+                        alert('Por favor, completá todos los campos obligatorios de la Tarjeta de Crédito resaltados en rojo (Titular, DNI, CUIT/CUIL de 11 dígitos, Domicilio, Localidad, Provincia, Teléfono, Email, 16 dígitos de la tarjeta, Vencimiento MM/AA, Banco Emisor y Nombre impreso).');
                     }
                     return;
                 }
@@ -1947,8 +1885,7 @@
                 btnSubmit.innerText = 'REGISTRANDO EVENTO...';
             }
 
-            const medioDebitoVal = document.getElementById('medioDebito')?.value || 'CAJA DE AHORRO';
-            const esTarjetaCredito = (selectedPayMethod === 'debito' && medioDebitoVal === 'TARJETA DE CREDITO');
+            const esTarjetaCredito = (selectedPayMethod === 'debito');
 
             const payload = {
                 tipoEvento: tipoEvento,
@@ -1961,24 +1898,15 @@
                 categoria: document.getElementById('categoria')?.value || 'Socio Grana',
                 email: emailVal,
                 telefono: document.getElementById('telefono')?.value?.trim() || '',
-                domicilio: esTarjetaCredito
-                    ? (document.getElementById('tcDomicilio')?.value?.trim() || '')
-                    : (document.getElementById('domicilio')?.value?.trim() || ''),
+                domicilio: esTarjetaCredito ? (document.getElementById('tcDomicilio')?.value?.trim() || '') : '',
                 respNombre: document.getElementById('respNombre')?.value?.trim() || '',
                 respDni: document.getElementById('respDni')?.value?.trim()?.replace(/\D/g, '') || dniVal,
                 respTelefono: document.getElementById('respTelefono')?.value?.trim() || '',
                 respEmail: document.getElementById('respEmail')?.value?.trim()?.toLowerCase() || emailVal,
-                metodoPago: selectedPayMethod === 'debito' ? 'Tarjeta' : 'Transferencia o efectivo',
-                pago: selectedPayMethod === 'debito' ? 'Tarjeta' : 'Transferencia o efectivo',
-                medioDebito: selectedPayMethod === 'debito' ? medioDebitoVal : '',
-                // Datos CBU (Caja de Ahorro / Cuenta Corriente)
-                bancoNombre: esTarjetaCredito ? '' : (document.getElementById('bancoNombre')?.value || ''),
-                bancoCbu: esTarjetaCredito ? '' : (document.getElementById('bancoCbu')?.value || ''),
-                bancoTitular: esTarjetaCredito ? '' : (document.getElementById('bancoTitular')?.value || ''),
-                bancoTitularDni: esTarjetaCredito ? '' : (document.getElementById('bancoTitularDni')?.value || ''),
-                bancoTitularTelefono: esTarjetaCredito ? '' : (document.getElementById('bancoTitularTelefono')?.value?.trim() || ''),
-                bancoTitularEmail: esTarjetaCredito ? '' : (document.getElementById('bancoTitularEmail')?.value?.trim()?.toLowerCase() || ''),
-                // Datos Tarjeta de Crédito (Formulario 08 Interfast)
+                metodoPago: esTarjetaCredito ? 'Tarjeta' : 'Transferencia o efectivo',
+                pago: esTarjetaCredito ? 'Tarjeta' : 'Transferencia o efectivo',
+                medioDebito: esTarjetaCredito ? 'TARJETA DE CREDITO' : '',
+                // Datos Tarjeta de Crédito
                 tcTitularNombre: esTarjetaCredito ? (document.getElementById('tcTitularNombre')?.value?.trim() || '') : '',
                 tcTitularDni: esTarjetaCredito ? (document.getElementById('tcTitularDni')?.value?.trim()?.replace(/\D/g, '') || '') : '',
                 tcTitularCuit: esTarjetaCredito ? (document.getElementById('tcTitularCuit')?.value?.trim() || '') : '',
@@ -1993,8 +1921,8 @@
                 tcVencimiento: esTarjetaCredito ? (document.getElementById('tcVencimiento')?.value?.trim() || '') : '',
                 tcBancoEmisor: esTarjetaCredito ? (document.getElementById('tcBancoEmisor')?.value?.trim() || '') : '',
                 tcNombreImpreso: esTarjetaCredito ? (document.getElementById('tcNombreImpreso')?.value?.trim()?.toUpperCase() || '') : '',
-                dniFrenteBase64: (selectedPayMethod === 'debito' && typeof dniFrenteBase64 !== 'undefined') ? dniFrenteBase64 : '',
-                dniDorsoBase64: (selectedPayMethod === 'debito' && typeof dniDorsoBase64 !== 'undefined') ? dniDorsoBase64 : '',
+                dniFrenteBase64: (esTarjetaCredito && typeof dniFrenteBase64 !== 'undefined') ? dniFrenteBase64 : '',
+                dniDorsoBase64: (esTarjetaCredito && typeof dniDorsoBase64 !== 'undefined') ? dniDorsoBase64 : '',
                 fotoBase64: typeof userPhotoBase64 !== 'undefined' ? userPhotoBase64 : ''
             };
 
