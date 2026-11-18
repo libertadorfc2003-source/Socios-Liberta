@@ -415,7 +415,7 @@
                                         <option value="Femenino: 7ma">Femenino: 7ma (2014 - 2015)</option>
                                         <option value="Femenino: 6ta">Femenino: 6ta (2012 - 2013)</option>
                                         <option value="Femenino: 5ta">Femenino: 5ta (2010 - 2011)</option>
-                                        <option value="Femenino: Primera y Reserva">Femenino: Primera y Reserva</option>
+                                        <option value="Femenino: Plantel Superior">Femenino: Plantel Superior</option>
                                     </optgroup>
                                     <optgroup label="🏆 SOCIO GRANA">
                                         <option value="Socio Grana">Socio Grana</option>
@@ -952,9 +952,15 @@
         }
 
         function renderArancelesDinamicos(valores) {
-            const femRows = valores.filter(v => String(v.genero).toLowerCase().includes('fem'));
-            const mascRows = valores.filter(v => String(v.genero).toLowerCase().includes('masc'));
-            const hinchaRows = valores.filter(v => {
+            const normalizarNombreCat = (cat) => {
+                const s = String(cat || '').trim();
+                if (/primera\s*y\s*reserva/i.test(s)) return 'Plantel Superior';
+                return s;
+            };
+            const valoresNorm = valores.map(v => Object.assign({}, v, { categoria: normalizarNombreCat(v.categoria) }));
+            const femRows = valoresNorm.filter(v => String(v.genero).toLowerCase().includes('fem'));
+            const mascRows = valoresNorm.filter(v => String(v.genero).toLowerCase().includes('masc'));
+            const hinchaRows = valoresNorm.filter(v => {
                 const g = String(v.genero).toLowerCase();
                 const c = String(v.categoria).toLowerCase();
                 return !g.includes('fem') && !g.includes('masc') && (g.includes('grana') || g.includes('hincha') || g.includes('socio') || c.includes('grana') || c.includes('hincha') || c.includes('socio'));
@@ -2452,7 +2458,7 @@ Libertador Fútbol Club - Un club por y para su gente.`;
                             <option value="Femenino: 7ma">Femenino: 7ma (2014 - 2015)</option>
                             <option value="Femenino: 6ta">Femenino: 6ta (2012 - 2013)</option>
                             <option value="Femenino: 5ta">Femenino: 5ta (2010 - 2011)</option>
-                            <option value="Femenino: Primera y Reserva">Femenino: Primera y Reserva</option>
+                            <option value="Femenino: Plantel Superior">Femenino: Plantel Superior</option>
                         </optgroup>
                         <optgroup label="🏆 SOCIO GRANA">
                             <option value="Socio Grana">Socio Grana</option>
@@ -2561,7 +2567,7 @@ Libertador Fútbol Club - Un club por y para su gente.`;
                             <td class="py-3 px-3 sm:px-4 text-right font-bold text-emerald-400 whitespace-nowrap">$ 77.000</td>
                         </tr>
                         <tr class="hover:bg-slate-800/30 transition">
-                            <td class="py-3 px-3 sm:px-4 font-bold text-white">Primera y Reserva</td>
+                            <td class="py-3 px-3 sm:px-4 font-bold text-white">Plantel Superior</td>
                             <td class="py-3 px-2 sm:px-3 text-center text-gray-400 whitespace-nowrap">-</td>
                             <td class="py-3 px-3 sm:px-4 text-right text-gray-300 whitespace-nowrap">$ 85.000</td>
                             <td class="py-3 px-3 sm:px-4 text-right font-bold text-emerald-400 whitespace-nowrap">$ 77.000</td>
@@ -2621,8 +2627,8 @@ Libertador Fútbol Club - Un club por y para su gente.`;
                         <tr class="hover:bg-slate-800/30 transition">
                             <td class="py-3 px-3 sm:px-4 font-bold text-white">Plantel Superior</td>
                             <td class="py-3 px-2 sm:px-3 text-center text-gray-400 whitespace-nowrap">-</td>
-                            <td class="py-3 px-3 sm:px-4 text-right text-gray-300 whitespace-nowrap">$ 100.000</td>
-                            <td class="py-3 px-3 sm:px-4 text-right font-bold text-emerald-400 whitespace-nowrap">$ 90.000</td>
+                            <td class="py-3 px-3 sm:px-4 text-right text-gray-300 whitespace-nowrap">$ 115.000</td>
+                            <td class="py-3 px-3 sm:px-4 text-right font-bold text-emerald-400 whitespace-nowrap">$ 105.000</td>
                         </tr>
                     </tbody>
                 </table>
